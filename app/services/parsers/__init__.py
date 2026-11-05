@@ -1,9 +1,9 @@
 """parsers - one module per file format, all returning the same list of blocks."""
 import os
 
-from .common import Block
-from .docx_parser import read_blocks as _read_docx
-from .pdf_parser import read_blocks as _read_pdf
+from app.services.parsers.common import Block
+from app.services.parsers.docx_parser import read_blocks as _read_docx
+from app.services.parsers.pdf_parser import read_blocks as _read_pdf
 
 PARSERS = {".docx": _read_docx, ".pdf": _read_pdf}
 SUPPORTED = tuple(PARSERS)

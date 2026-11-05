@@ -24,7 +24,7 @@ def print_column_content():
             print("The table is empty.")
 
     except Exception as e:
-        print(f"Грешка при връзката с базата: {e}")
+        print(f"error while connecting to the DB: {e}")
 
     finally:
         if 'cur' in locals():

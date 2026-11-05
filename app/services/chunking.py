@@ -14,13 +14,6 @@ Pipeline
        -> windowed embeddings -> semantic breakpoints (only inside long sections)
        -> merge tiny / split huge chunks -> Chunk(content, embed_text, metadata)
 
-Usage (with your existing Ollama model):
-    from llama_index.embeddings.ollama import OllamaEmbedding
-    em = OllamaEmbedding(model_name="bge-m3", base_url="http://localhost:11434")
-    blocks = read_blocks("documents/obqva.docx")          # parsers/docx_parser.py
-    chunks = chunk_blocks(blocks, em.get_text_embedding_batch, file_name="obqva.docx")
-    # store c.content in `content`, embed c.embed_text, keep c.metadata as JSON.
-
 Command line (compare settings quickly, no database needed):
     python chunking.py ../documents            # uses Ollama bge-m3
     python chunking.py ../documents --stub     # offline smoke test, NOT real quality
@@ -60,7 +53,7 @@ def heading_level(text: str, style: str) -> str | None:
     return None
 
 
-# "2. История на творбата – написана е през 1913 г. ..." -> section "2. История на творбата"
+# paragraph title lead
 _LEAD = re.compile(r"^(\d{1,2})\s*\.\s*([^–—\-]{3,60}?)\s*[–—-]\s")
 
 
