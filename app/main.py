@@ -1,5 +1,7 @@
 # add project root to PYTHONPATH so src modules are visible
 import sys
+import time
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -12,16 +14,38 @@ sys.path.append(str(Path(__file__).resolve().parent))
 from app.dependencies import DatabasePool, OllamaLLMClient
 from app.routers import query, upload
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+logger = logging.getLogger("rag.startup")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("starting: initializing connections and models...")
+    # STARTUP
+    logger.info("initializing database connection pool and clients"
+                "")
     app.state.db_pool = DatabasePool()
     app.state.embed_model = OllamaEmbedding(model_name="bge-m3", base_url="http://localhost:11434")
     app.state.llm_client = OllamaLLMClient(model_name="qwen3.5:9b", base_url="http://localhost:11434")
-    print("all resources loaded successfully")
+
+    logger.info("warming up embedding model 'bge-m3' in Ollama memory...")
+    start_time = time.perf_counter()
+    try:
+        _ = app.state.embed_model.get_text_embedding("warmup probe")
+        duration = time.perf_counter() - start_time
+        logger.info(f"Embedding model 'bge-m3' warmed up and ready in {duration:.2f}s.")
+    except Exception as e:
+        logger.warning(f"Embedding warmup warning: {e}. Ollama may still load lazily on first query.")
+
+    logger.info("All dependencies initialized successfully! API is ready to serve requests.")
+
     yield
-    print("stopping connections and models...")
+
+    # SHUTDOWN
+    logger.info("Shutting down: closing database connection pool...")
     app.state.db_pool.close_all()
+    logger.info("All connections closed.")
 
 app = FastAPI(
     title="RAG Backend API",
