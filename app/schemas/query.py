@@ -4,6 +4,10 @@ from typing import List, Optional, Any, Dict
 class ChunkSource(BaseModel):
     content: str
     similarity_score: float
+    file_name: Optional[str] = None
+    page: Optional[int] = None
+    chunk_index: Optional[int] = None
+    section: Optional[str] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 class QueryRequest(BaseModel):

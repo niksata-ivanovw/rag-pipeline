@@ -29,13 +29,21 @@ class VectorRetrieverService:
                 cur.execute(search_query, (query_vector, query_vector, top_k))
                 rows = cur.fetchall()
 
-                return [
-                    ChunkSource(
-                        content=row[0].strip(),
-                        similarity_score=float(row[1]),
-                        metadata=row[2] or {}
+                sources = []
+                for row in rows:
+                    content, score, meta = row[0].strip(), float(row[1]), row[2] or {}
+                    sources.append(
+                        ChunkSource(
+                            content=content,
+                            similarity_score=score,
+                            file_name=meta.get("file_name"),
+                            page=meta.get("page"),
+                            chunk_index=meta.get("chunk_index"),
+                            section=meta.get("section"),
+                            metadata=meta
+                        )
                     )
-                    for row in rows
-                ]
+
+                return sources
         finally:
             self.db_pool.release_connection(conn)

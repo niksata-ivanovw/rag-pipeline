@@ -7,6 +7,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from llama_index.embeddings.ollama import OllamaEmbedding
+from llama_index.llms.ollama import Ollama
 from starlette.middleware.cors import CORSMiddleware
 
 sys.path.append(str(Path(__file__).resolve().parent))
@@ -27,14 +28,15 @@ async def lifespan(app: FastAPI):
                 "")
     app.state.db_pool = DatabasePool()
     app.state.embed_model = OllamaEmbedding(model_name="bge-m3", base_url="http://localhost:11434")
-    app.state.llm_client = OllamaLLMClient(model_name="qwen3.5:9b", base_url="http://localhost:11434")
+    app.state.llm_client = Ollama(model="qwen3.5:9b", base_url="http://localhost:11434", request_timeout=120.0)
 
     logger.info("warming up embedding model 'bge-m3' in Ollama memory...")
     start_time = time.perf_counter()
     try:
         _ = app.state.embed_model.get_text_embedding("warmup probe")
+        _ = app.state.llm_client.complete("Hi", max_tokens=1)
         duration = time.perf_counter() - start_time
-        logger.info(f"Embedding model 'bge-m3' warmed up and ready in {duration:.2f}s.")
+        logger.info(f"Embedding model 'bge-m3' and LLM model 'qwen3.5:9b' warmed up and ready in {duration:.2f}s.")
     except Exception as e:
         logger.warning(f"Embedding warmup warning: {e}. Ollama may still load lazily on first query.")
 

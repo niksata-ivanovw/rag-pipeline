@@ -2,6 +2,7 @@ import httpx
 import psycopg2.pool
 from fastapi import Request
 from llama_index.embeddings.ollama import OllamaEmbedding
+from llama_index.llms.ollama import Ollama
 
 DB_CONFIG = dict(
     dbname='rag_database',
@@ -35,7 +36,12 @@ class OllamaLLMClient:
         with httpx.Client(timeout=120.0) as client:
             response = client.post(
                 self.api_url,
-                json={"model": self.model_name, "prompt": prompt, "stream": False},
+                json={
+                    "model": self.model_name,
+                    "prompt": prompt,
+                    "stream": False,
+                    "keep_alive": -1
+                },
             )
             response.raise_for_status()
             return response.json().get("response", "").strip()
@@ -46,5 +52,5 @@ def get_db_pool(request: Request) -> DatabasePool:
 def get_embed_model(request: Request) -> OllamaEmbedding:
     return request.app.state.embed_model
 
-def get_llm_client(request: Request) -> OllamaLLMClient:
+def get_llm_client(request: Request) -> Ollama:
     return request.app.state.llm_client
