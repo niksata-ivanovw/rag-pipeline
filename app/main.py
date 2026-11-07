@@ -10,6 +10,8 @@ from llama_index.embeddings.ollama import OllamaEmbedding
 from llama_index.llms.ollama import Ollama
 from starlette.middleware.cors import CORSMiddleware
 
+from app.services.storage_service import MinioStorageService
+
 sys.path.append(str(Path(__file__).resolve().parent))
 
 from app.dependencies import DatabasePool, OllamaLLMClient
@@ -24,9 +26,9 @@ logger = logging.getLogger("rag.startup")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # STARTUP
-    logger.info("initializing database connection pool and clients"
-                "")
+    logger.info("initializing database, MinIO storage and models")
     app.state.db_pool = DatabasePool()
+    app.state.storage_service = MinioStorageService()
     app.state.embed_model = OllamaEmbedding(model_name="bge-m3", base_url="http://localhost:11434")
     app.state.llm_client = Ollama(model="qwen3.5:9b", base_url="http://localhost:11434", request_timeout=120.0)
 

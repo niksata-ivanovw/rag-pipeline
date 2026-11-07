@@ -4,6 +4,8 @@ from fastapi import Request
 from llama_index.embeddings.ollama import OllamaEmbedding
 from llama_index.llms.ollama import Ollama
 
+from app.services.storage_service import MinioStorageService
+
 DB_CONFIG = dict(
     dbname='rag_database',
     user='postgres',
@@ -54,3 +56,6 @@ def get_embed_model(request: Request) -> OllamaEmbedding:
 
 def get_llm_client(request: Request) -> Ollama:
     return request.app.state.llm_client
+
+def get_storage_service(request: Request) -> MinioStorageService:
+    return request.app.state.storage_service
