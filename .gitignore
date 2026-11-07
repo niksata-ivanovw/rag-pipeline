@@ -1,5 +1,7 @@
-documents\
-more_docs\
+documents/
+more_docs/
+~$*.docx
+.idea/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
